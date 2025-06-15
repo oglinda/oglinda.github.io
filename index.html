@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <title>Aranjament Elevi</title>
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 40px;
+    background: #f7f9fc;
+    color: #333;
+  }
+
+  h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-weight: 600;
+    margin-right: 10px;
+  }
+
+  input[type="date"] {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .container {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .rotated-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+  }
+
+  .desk {
+    flex: 0 0 240px;
+    padding: 14px;
+    background: linear-gradient(145deg, #ffffff, #e6eefa);
+    border-radius: 8px;
+    box-shadow: 2px 4px 10px rgba(0,0,0,0.08);
+    text-align: center;
+    font-weight: 500;
+    transition: transform 0.3s ease;
+  }
+
+  .desk:hover {
+    transform: scale(1.05);
+    background: linear-gradient(145deg, #e3f1ff, #ffffff);
+  }
+  input[type="date"] {
+  appearance: none;
+  -webkit-appearance: none;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #333;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.05);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input[type="date"]:focus {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+  outline: none;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5);
+  cursor: pointer;
+}
+
+</style>
+<style media="print">
+  body {
+    background: #fff;
+    padding: 0;
+    margin: 20px;
+    font-family: 'Segoe UI', sans-serif;
+    color: #000;
+  }
+
+  h2, label, input {
+    display: none; /* Hide UI controls on print */
+  }
+
+  .print-date {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .container {
+    display: block;
+    margin: 0;
+  }
+
+  .rotated-row {
+    display: table-row;
+  }
+
+  .desk {
+    display: table-cell;
+    border: 1px solid #333;
+    padding: 10px;
+    min-width: 140px;
+    text-align: center;
+    background: none;
+    box-shadow: none;
+    font-size: 14px;
+  }
+</style>
+
+
+</head>
+<body>
+  <h2>Vizualizare Aranjament Clasă</h2>
+  <label for="datePicker">Selectează data: </label>
+  <input type="date" id="datePicker">
+  <div class="container" id="output"></div>
+
+  <script>
+    const dataPath = './aranjamente/7a.json';
+    const schoolStart = new Date(2000, 8, 1); // 1 septembrie 2000
+
+
+    async function loadData() {
+      const res = await fetch(dataPath);
+      return await res.json();
+    }
+
+    function isWeekday(date) {
+      const day = date.getDay();
+      return day >= 1 && day <= 5;
+    }
+
+    function countSchoolDays(start, end) {
+      let days = 0;
+      const date = new Date(start);
+      while (date <= end) {
+        if (isWeekday(date)) days++;
+        date.setDate(date.getDate() + 1);
+      }
+      return days;
+    }
+
+    function rotate(arr, n = 1) {
+      const l = arr.length;
+      if (!l) return arr;
+      const step = n % l;
+      return arr.slice(-step).concat(arr.slice(0, -step));
+    }
+
+    function rotateArrangement(data, date) {
+      const days = countSchoolDays(schoolStart, date);
+      const mondaysBetween = (start, end) => {
+  let count = 0;
+  const date = new Date(start);
+  while (date <= end) {
+    if (date.getDay() === 1) count++; // Monday = 1
+    date.setDate(date.getDate() + 1);
+  }
+  return count;
+};
+
+const weeks = mondaysBetween(schoolStart, date);
+
+
+      // Desk rotation within rows
+      data.rows.forEach(row => {
+        if (!row.mobile) return;
+        const desks = row.desks;
+        const fixed = desks.map((d, i) => [i, d]).filter(([_, d]) => !d.mobile);
+        let mobileDesks = desks.filter(d => d.mobile !== false);
+        for (let i = 0; i < days; i++) {
+          mobileDesks = rotate(mobileDesks, 1);
+        }
+        fixed.forEach(([i, d]) => mobileDesks.splice(i, 0, d));
+        row.desks = mobileDesks;
+      });
+
+      // Row rotation
+      const fixedRows = data.rows.map((r, i) => [i, r]).filter(([_, r]) => !r.mobile);
+      let mobileRows = data.rows.filter(r => r.mobile !== false);
+      mobileRows = rotate(mobileRows, weeks);
+      fixedRows.forEach(([i, r]) => mobileRows.splice(i, 0, r));
+      data.rows = mobileRows;
+
+      return data;
+    }
+
+    function displayVertical(data) {
+      const container = document.getElementById('output');
+      container.innerHTML = '';
+
+      const numRows = data.rows.length;
+      const maxDesks = Math.max(...data.rows.map(r => r.desks.length));
+
+      for (let i = 0; i < maxDesks; i++) {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = 'rotated-row';
+        for (let j = 0; j < numRows; j++) {
+          const row = data.rows[j];
+          const desk = row.desks[i];
+          const cell = document.createElement('div');
+          cell.className = 'desk';
+          if (desk) {
+            cell.innerHTML = desk.pupils.join('<br>');
+          } else {
+            cell.innerHTML = '&nbsp;';
+          }
+          rowDiv.appendChild(cell);
+        }
+        container.appendChild(rowDiv);
+      }
+    }
+
+async function update() {
+  const date = new Date(document.getElementById('datePicker').value);
+  const rawData = await loadData();
+
+  // Create a deep clone so we start from a clean slate each time
+  const freshData = JSON.parse(JSON.stringify(rawData));
+  const arranged = rotateArrangement(freshData, date);
+  displayVertical(arranged);
+}
+
+
+    document.getElementById('datePicker').valueAsDate = new Date();
+    document.getElementById('datePicker').addEventListener('change', update);
+    update();
+  </script>
+</body>
+</html>

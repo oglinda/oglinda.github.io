@@ -1,0 +1,35 @@
+{
+    "class-name" : "Casa a VII-a A",
+    "rows" : [
+        {
+            "desks" : [
+                { "pupils" : ["Elevul cu nume lung 11", "Elevul 12"], "mobile":true },
+                { "pupils" : ["Elevul 13", "Elevul 14"], "mobile":true },
+                { "pupils" : ["Elevul 15", "Elevul 16"], "mobile":true },
+                { "pupils" : ["Elevul 17", "Elevul 18"], "mobile":true },
+                { "pupils" : ["Elevul 19", "Elevul 10"], "mobile":true }
+            ],
+            "mobile" : true
+        },
+        {
+            "desks" : [
+                { "pupils" : ["Elevul 21", "Elevul 22"], "mobile":true },
+                { "pupils" : ["Elevul 23", "Elevul 24"], "mobile":true },
+                { "pupils" : ["Elevul 25", "Elevul 26"], "mobile":true },
+                { "pupils" : ["Elevul 27", "Elevul 28"], "mobile":true },
+                { "pupils" : ["Elevul 29", "Elevul 20"], "mobile":true }
+            ],
+            "mobile" : true
+        },
+        {
+            "desks" : [
+                { "pupils" : ["Elevul 31", "Elevul 32"], "mobile":true },
+                { "pupils" : ["Elevul 33", "Elevul 34"], "mobile":true },
+                { "pupils" : ["Elevul 35", "Elevul 36"], "mobile":true },
+                { "pupils" : ["Elevul 37", "Elevul 38"], "mobile":true },
+                { "pupils" : ["Elevul 39", "Elevul 30"], "mobile":true }
+            ],
+            "mobile" : true
+        }
+    ]
+}
